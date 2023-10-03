@@ -1,0 +1,25 @@
+FROM alpine:edge
+
+# update and get the necessary tools
+RUN apk update && \
+    apk add build-base pkgconfig zip unzip curl git tar wget cmake make ninja linux-headers g++ libressl-dev python3-dev pacman-makepkg
+
+# Create a a new group and user as makepkg does not allow running as root
+RUN addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
+
+# create a working directory and give proper permission
+RUN mkdir /app && \
+    chown appuser:appgroup /app
+
+USER appuser
+
+WORKDIR /app
+
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+
+# build and install vcpkg
+RUN git clone https://github.com/Microsoft/vcpkg.git && \
+    cd ./vcpkg && \
+    ./bootstrap-vcpkg.sh
+
